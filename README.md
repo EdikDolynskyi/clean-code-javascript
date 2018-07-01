@@ -3,13 +3,12 @@
 ## Table of Contents
   1. [Variables](#variables)
   2. [Functions](#functions)
-  3. [Objects and Data Structures](#objects-and-data-structures)
-  4. [Classes](#classes)
-  5. [Concurrency](#concurrency)
-  6. [Error Handling](#error-handling)
-  7. [Formatting](#formatting)
-  8. [Comments](#comments)
-  9. [Translation](#translation)
+  3. [Classes](#classes)
+  4. [Concurrency](#concurrency)
+  5. [Error Handling](#error-handling)
+  6. [Formatting](#formatting)
+  7. [Comments](#comments)
+  8. [Translation](#translation)
 
 ## **Variables**
 ### Use meaningful and pronounceable variable names
@@ -141,10 +140,6 @@ function paintCar(car) {
 **[⬆ back to top](#table-of-contents)**
 
 ### Use default arguments instead of short circuiting or conditionals
-Default arguments are often cleaner than short circuiting. Be aware that if you
-use them, your function will only provide default values for `undefined`
-arguments. Other "falsy" values such as `''`, `""`, `false`, `null`, `0`, and
-`NaN`, will not be replaced by a default value.
 
 **Bad:**
 ```javascript
@@ -180,42 +175,16 @@ function createMenu({ title, body, buttonText, cancellable }) {
   // ...
 }
 
+function createMenu(data) {
+  // ...
+}
+
 createMenu({
   title: 'Foo',
   body: 'Bar',
   buttonText: 'Baz',
   cancellable: true
 });
-```
-**[⬆ back to top](#table-of-contents)**
-
-
-### Functions should do one thing
-
-**Bad:**
-```javascript
-function emailClients(clients) {
-  clients.forEach((client) => {
-    const clientRecord = database.lookup(client);
-    if (clientRecord.isActive()) {
-      email(client);
-    }
-  });
-}
-```
-
-**Good:**
-```javascript
-function emailActiveClients(clients) {
-  clients
-    .filter(isActiveClient)
-    .forEach(email);
-}
-
-function isActiveClient(client) {
-  const clientRecord = database.lookup(client);
-  return clientRecord.isActive();
-}
 ```
 **[⬆ back to top](#table-of-contents)**
 
@@ -241,74 +210,6 @@ function addMonthToDate(month, date) {
 
 const date = new Date();
 addMonthToDate(1, date);
-```
-**[⬆ back to top](#table-of-contents)**
-
-### Functions should only be one level of abstraction
-When you have more than one level of abstraction your function is usually
-doing too much. Splitting up functions leads to reusability and easier
-testing.
-
-**Bad:**
-```javascript
-function parseBetterJSAlternative(code) {
-  const REGEXES = [
-    // ...
-  ];
-
-  const statements = code.split(' ');
-  const tokens = [];
-  REGEXES.forEach((REGEX) => {
-    statements.forEach((statement) => {
-      // ...
-    });
-  });
-
-  const ast = [];
-  tokens.forEach((token) => {
-    // lex...
-  });
-
-  ast.forEach((node) => {
-    // parse...
-  });
-}
-```
-
-**Good:**
-```javascript
-function parseBetterJSAlternative(code) {
-  const tokens = tokenize(code);
-  const ast = lexer(tokens);
-  ast.forEach((node) => {
-    // parse...
-  });
-}
-
-function tokenize(code) {
-  const REGEXES = [
-    // ...
-  ];
-
-  const statements = code.split(' ');
-  const tokens = [];
-  REGEXES.forEach((REGEX) => {
-    statements.forEach((statement) => {
-      tokens.push( /* ... */ );
-    });
-  });
-
-  return tokens;
-}
-
-function lexer(tokens) {
-  const ast = [];
-  tokens.forEach((token) => {
-    ast.push( /* ... */ );
-  });
-
-  return ast;
-}
 ```
 **[⬆ back to top](#table-of-contents)**
 
@@ -422,7 +323,6 @@ createMenu(menuConfig);
 
 
 ### Don't use flags as function parameters
-Flags tell your user that this function does more than one thing. Functions should do one thing. Split out your functions if they are following different code paths based on a boolean.
 
 **Bad:**
 ```javascript
@@ -496,11 +396,6 @@ class Cessna extends Airplane {
 **[⬆ back to top](#table-of-contents)**
 
 ### Don't over-optimize
-Modern browsers do a lot of optimization under-the-hood at runtime. A lot of
-times, if you are optimizing then you are just wasting your time. [There are good
-resources](https://github.com/petkaantonov/bluebird/wiki/Optimization-killers)
-for seeing where optimization is lacking. Target those in the meantime, until
-they are fixed if they can be.
 
 **Bad:**
 ```javascript
@@ -521,9 +416,6 @@ for (let i = 0; i < list.length; i++) {
 **[⬆ back to top](#table-of-contents)**
 
 ### Remove dead code
-Dead code is just as bad as duplicate code. There's no reason to keep it in
-your codebase. If it's not being called, get rid of it! It will still be safe
-in your version history if you still need it.
 
 **Bad:**
 ```javascript
@@ -548,65 +440,6 @@ function newRequestModule(url) {
 
 const req = newRequestModule;
 inventoryTracker('apples', req, 'www.inventory-awesome.io');
-```
-**[⬆ back to top](#table-of-contents)**
-
-## **Objects and Data Structures**
-### Use getters and setters
-Using getters and setters to access data on objects could be better than simply
-looking for a property on an object. "Why?" you might ask. Well, here's an
-unorganized list of reasons why:
-
-* When you want to do more beyond getting an object property, you don't have
-to look up and change every accessor in your codebase.
-* Makes adding validation simple when doing a `set`.
-* Encapsulates the internal representation.
-* Easy to add logging and error handling when getting and setting.
-* You can lazy load your object's properties, let's say getting it from a
-server.
-
-
-**Bad:**
-```javascript
-function makeBankAccount() {
-  // ...
-
-  return {
-    balance: 0,
-    // ...
-  };
-}
-
-const account = makeBankAccount();
-account.balance = 100;
-```
-
-**Good:**
-```javascript
-function makeBankAccount() {
-  // this one is private
-  let balance = 0;
-
-  // a "getter", made public via the returned object below
-  function getBalance() {
-    return balance;
-  }
-
-  // a "setter", made public via the returned object below
-  function setBalance(amount) {
-    // ... validate before updating the balance
-    balance = amount;
-  }
-
-  return {
-    // ...
-    getBalance,
-    setBalance,
-  };
-}
-
-const account = makeBankAccount();
-account.setBalance(100);
 ```
 **[⬆ back to top](#table-of-contents)**
 
@@ -684,8 +517,6 @@ class Human extends Mammal {
 
 ## **Concurrency**
 ### Use Promises, not callbacks
-Callbacks aren't clean, and they cause excessive amounts of nesting. With ES2015/ES6,
-Promises are a built-in global type. Use them!
 
 **Bad:**
 ```javascript
@@ -728,11 +559,6 @@ get('https://en.wikipedia.org/wiki/Robert_Cecil_Martin')
 **[⬆ back to top](#table-of-contents)**
 
 ### Async/Await are even cleaner than Promises
-Promises are a very clean alternative to callbacks, but ES2017/ES8 brings async and await
-which offer an even cleaner solution. All you need is a function that is prefixed
-in an `async` keyword, and then you can write your logic imperatively without
-a `then` chain of functions. Use this if you can take advantage of ES2017/ES8 features
-today!
 
 **Bad:**
 ```javascript
@@ -771,10 +597,6 @@ async function getCleanCodeArticle() {
 
 
 ## **Error Handling**
-Thrown errors are a good thing! They mean the runtime has successfully
-identified when something in your program has gone wrong and it's letting
-you know by stopping function execution on the current stack, killing the
-process (in Node), and notifying you in the console with a stack trace.
 
 ### Don't ignore caught errors
 
