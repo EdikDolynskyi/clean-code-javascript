@@ -8,7 +8,6 @@
   5. [Error Handling](#error-handling)
   6. [Formatting](#formatting)
   7. [Comments](#comments)
-  8. [Translation](#translation)
 
 ## **Variables**
 ### Use meaningful and pronounceable variable names
